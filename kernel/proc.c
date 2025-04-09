@@ -344,7 +344,7 @@ reparent(struct proc *p)
 // An exited process remains in the zombie state
 // until its parent calls wait().
 void
-exit(int status)
+exit(int status, char* exit_msg)
 {
   struct proc *p = myproc();
 
@@ -376,6 +376,7 @@ exit(int status)
   acquire(&p->lock);
 
   p->xstate = status;
+  safestrcpy(p->exit_msg, exit_msg, sizeof(p->exit_msg));
   p->state = ZOMBIE;
 
   release(&wait_lock);
