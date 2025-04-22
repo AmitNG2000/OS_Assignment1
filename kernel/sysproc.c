@@ -13,7 +13,7 @@ sys_exit(void)
   argint(0, &n);
 
   char exit_msg[32];
-  argstr(1, exit_msg, sizeof(*exit_msg));
+  argstr(1, exit_msg, sizeof(exit_msg)); 
 
   exit(n, exit_msg);
   return 0;  // not reached
@@ -35,8 +35,14 @@ uint64
 sys_wait(void)
 {
   uint64 p;
+  uint64 exit_msg;
+  
   argaddr(0, &p);
-  return wait(p);
+  argaddr(1, &exit_msg);
+
+
+
+  return wait(p, (char*)exit_msg);
 }
 
 uint64

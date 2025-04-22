@@ -1,7 +1,9 @@
 #include "kernel/types.h"
 #include "user/user.h"
+#include "kernel/stat.h"
+
 
 int main() {
-    printf("Hello World xv6\n");
+    exit(0,"goodbye xv6\n");
     return 0;
 }
