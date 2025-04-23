@@ -30,6 +30,16 @@ sys_fork(void)
 {
   return fork();
 }
+uint64
+sys_forkn(void)
+{
+  int n;
+  uint64 pids;
+  argint(0, &n);
+  argaddr(1, &pids);
+  return forkn(n, (int*)pids);
+}
+
 
 uint64
 sys_wait(void)
@@ -43,6 +53,16 @@ sys_wait(void)
 
 
   return wait(p, (char*)exit_msg);
+}
+uint64
+sys_waitall(void)
+{
+  uint64 p;
+  uint64 statuses;
+  
+  argaddr(0, &p);
+  argaddr(1, &statuses);
+  return waitall((int*)p, (int*)statuses);
 }
 
 uint64
