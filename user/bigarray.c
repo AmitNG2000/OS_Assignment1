@@ -1,45 +1,57 @@
+#include "kernel/types.h"
+#include "user/user.h"
+#include "kernel/stat.h"
 
-// #include <unistd.h>
-// #include <sys/syscall.h>
-// #include <sys/wait.h>
-// #include <errno.h>
+#define ARRAY_SIZE (1 << 16) // 2^16
+#define NUM_OF_CHILDREN_AND_PARTS 4
 
-// #define SYS_forkn 451  // Replace with the actual syscall number for forkn
-// #define SYS_waitall 452 // Replace with the actual syscall number for waitall
 
-// int main() {
-//     int n = 5; // Number of child processes to create
-//     int array[n];
+int main() {
+    int array[ARRAY_SIZE];
 
-//     // Initialize the array with some values
-//     for (int i = 0; i < n; i++) {
-//         array[i] = i + 1;
-//     }
+    // Initialize the array with consecutive numbers starting from 0
+    for (int i = 0; i < ARRAY_SIZE; i++) {
+        array[i] = i;
+    }
 
-//     // Call the forkn system call
-//     int ret = syscall(SYS_forkn, n);
-//     if (ret == -1) {
-//         perror("forkn syscall failed");
-//         return EXIT_FAILURE;
-//     }
+    int pids_arr[NUM_OF_CHILDREN_AND_PARTS];
+    int quarter_length = ARRAY_SIZE / NUM_OF_CHILDREN_AND_PARTS;
+    int sum = 0;
 
-//     if (ret == 0) {
-//         // Child process
-//         printf("Child process (PID: %d) working on array element: %d\n", getpid(), array[getpid() % n]);
-//         exit(0); // Child exits after processing
-//     } else {
-//         // Parent process
-//         printf("Parent process (PID: %d) waiting for all children to finish...\n", getpid());
+    int forkn_order = forkn(NUM_OF_CHILDREN_AND_PARTS, pids_arr);
+    //error
+    if (forkn_order < 0) {
+        printf("Forkn failed\n");
+        exit(1, "Forkn failed\n");
+    }
+    //parent process
+    if (forkn_order == 0) {
 
-//         // Call the waitall system call
-//         ret = syscall(SYS_waitall);
-//         if (ret == -1) {
-//             perror("waitall syscall failed");
-//             return EXIT_FAILURE;
-//         }
+        int kiiled_children = 0;
+        int exit_statuses[NUM_OF_CHILDREN_AND_PARTS];
+        waitall(&kiiled_children, exit_statuses);
+        // sum the exit statuses of the child processes
+        for (int i = 0; i < NUM_OF_CHILDREN_AND_PARTS; i++) {
+            sum+= exit_statuses[i];
+        }
+        printf("Total sum of the array: %d\n", sum);
+        return sum; //at parent process only
+    }
+    // Child processes
+    if (forkn_order > 0) {
+        int child_index = forkn_order - 1;
+        int start_index = child_index * quarter_length;
+        int end_index = (child_index + 1) * quarter_length; 
 
-//         printf("All child processes have finished.\n");
-//     }
+        // Calculate the sum of the assigned part of the array
+        for (int i = start_index; i < end_index; i++) {
+            sum += array[i];
+        }
 
-//     return EXIT_SUCCESS;
-// }
+        // Exit with the calculated sum
+        printf("Childe forkn order=%d, the partly calculated sum=%d\n", forkn_order, sum);
+        exit(sum, "Child process exited");
+    }
+    //never get to this part
+    return 0;
+}
