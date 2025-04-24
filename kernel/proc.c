@@ -333,7 +333,7 @@ forkn(int n, int* pids)
   }
 
   int i;
-  struct proc *p_arr[n*sizeof(struct proc*)];
+  struct proc *p_arr[n];
   struct proc *np;
   struct proc *p = myproc();
 
