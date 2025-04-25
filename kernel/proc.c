@@ -412,28 +412,27 @@ forkn(int n, int* pids)
 int
 waitall(int* n, int* statuses){
   struct proc *pp; //child process
-  int havekids;
   struct proc *p = myproc();
-  int killed_children = 0; //counter for killed children
+  int killed_children; //counter
+  int active_children; //counter
   int exit_statuses[NPROC]; //array for exit statuses of killed children
 
   acquire(&wait_lock);
 
   for(;;){
+    killed_children = 0; //counter
+    active_children = 0; //counter
     // Scan through table looking for exited children.
-    havekids = 0;
     for(pp = proc; pp < &proc[NPROC]; pp++){
       if(pp->parent == p){
-        // make sure the child isn't still in exit() or swtch().
         acquire(&pp->lock);
-
-        havekids = 1;
+        active_children++; //count the number of children
         if(pp->state == ZOMBIE){
           // Found one.
           exit_statuses[killed_children] = pp->xstate; //store exit status of child proces
-          printf("Collecting child PID=%d with exit status=%d\n", pp->pid, pp->xstate);
+          printf("[waitall] Collecting child PID=%d with exit status=%d\n", pp->pid, pp->xstate);
           freeproc(pp);
-          printf("Collected\n");
+          printf("[waitall] Collected\n");
           killed_children++;
           release(&pp->lock);
           // release(&wait_lock);
@@ -444,14 +443,27 @@ waitall(int* n, int* statuses){
       }
     }
 
-    if (!havekids) {
+
+    // If there were no children at all
+    if(active_children == 0 && killed_children == 0){
+      release(&wait_lock);
+      printf("[waitall] No children to wait from the beginning\n");
       if(copyout(p->pagetable,(uint64) n, (char *)&killed_children, sizeof(int))< 0) { //if not have any children, set n to 0 and copy to user space   
         goto error;
       }
-      if(killed_children !=0 && copyout(p->pagetable,(uint64) statuses, (char *) exit_statuses, sizeof(int)*killed_children)< 0) { //if not have any children, set n to 0 and copy to user space
+      return 0;
+    }
+    // if there were children and at the last round we kill all shildren.
+    if(active_children == killed_children && active_children > 0){
+      printf("[waitall] No children to wait for\n");
+      if(copyout(p->pagetable,(uint64) n, (char *)&killed_children, sizeof(int))< 0) { // copy n to user space
+        goto error;
+      }
+      if(copyout(p->pagetable,(uint64) statuses, (char *) exit_statuses, sizeof(int)*killed_children)< 0) { //copy exit statuses to user space
         goto error;
       }             
       release(&wait_lock);
+      printf("[waitall] Finisied\n");
       return 0;
     }
     
@@ -462,10 +474,13 @@ waitall(int* n, int* statuses){
     }
     
     // Wait for a child to exit.
+    printf("[waitall] Parent go to sleep waiting for child to exit...\n");
     sleep(p, &wait_lock);  //DOC: wait-sleep
+    printf("[waitall] Parent wake up\n");
   }
 
-  error: 
+  error:
+    printf("[waitall] Error\n");
     release(&wait_lock);
     return -1;
 }
