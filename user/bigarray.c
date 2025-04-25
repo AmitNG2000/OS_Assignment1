@@ -18,11 +18,7 @@ int main() {
   }
   // Create child processes.
   int forkn_order = forkn(NUM_OF_CHILDREN_AND_PARTS, pids_arr);
-  // printf("[bigarray parent] Created children with PIDs: ");
-  // for (int i = 0; i < NUM_OF_CHILDREN_AND_PARTS; i++) {
-  //   printf("%d ", pids_arr[i]);
-  // }
-  // printf("\n"); ////// This led to a mix in print since in xv6 printf() is not buffered.
+  
   //error
   if (forkn_order < 0) {
       printf("Forkn failed\n");
@@ -68,61 +64,3 @@ int main() {
   //never get to this part
   return 0;
 }
-
-
-// #include "kernel/types.h"
-//  #include "kernel/param.h"
-//  #include "user/user.h"
- 
-//  #define SIZE (1 << 16)
-//  #define PARTS 4
- 
-//  int arr[SIZE];
-//  int pids[PARTS];
- 
-//  int main() {
-//    // Initialize array
-//    for (int i = 0; i < SIZE; i++)
-//      arr[i] = i;
- 
-//    int which = forkn(PARTS, pids);
-//    if (which < 0) {
-//      fprintf(2, "forkn failed\n");
-//      exit(1, "");
-//    }
- 
-//    if (which > 0) {
-//      // Child process
-//      int start = (which - 1) * (SIZE / PARTS);
-//      int end = which * (SIZE / PARTS);
-//      int sum = 0;
-//      for (int i = start; i < end; i++)
-//        sum += arr[i];
- 
-//      printf("Child %d (pid=%d) computed sum = %d\n", which, getpid(), sum);
-//      exit(sum, "");
-//    }
- 
-//    // Parent process
-//    printf("Created children with PIDs: ");
-//    for (int i = 0; i < PARTS; i++) {
-//      printf("%d ", pids[i]);
-//    }
-//    printf("\n");
- 
-//    int count;
-//    int statuses[NPROC];
- 
-//    if (waitall(&count, statuses) < 0) {
-//      fprintf(2, "waitall failed\n");
-//      exit(1, "");
-//    }
- 
-//    int total = 0;
-//    for (int i = 0; i < count; i++){
-//     total += statuses[i];
-//    }
- 
-//    printf("Final total = %d\n", total);
-//    exit(0, "");
-//  }
