@@ -40,7 +40,7 @@ int main() {
       for (int i = 0; i < NUM_OF_CHILDREN_AND_PARTS; i++) {
         total_sum+= exit_statuses[i];
       }
-      printf("Total sum of the array: %d\n", total_sum);
+      printf("[bigarray parent] Total sum of the array: %d\n", total_sum);
       sleep(1); // allow time for stdout to flush
       exit(total_sum, "Parent done");
   }
@@ -57,8 +57,7 @@ int main() {
       }
 
       // Exit with the calculated sum
-      printf("Childe forkn order=%d with calculated partly sum=%d\n", forkn_order, sum);
-      sleep(1); // allow time for stdout to flush
+      printf("[bigarray child] Childe forkn order=%d with calculated partly sum=%d\n", forkn_order, sum);
       exit(sum, "Child process exited");
   }
   //never get to this part

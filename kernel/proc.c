@@ -432,7 +432,7 @@ waitall(int* n, int* statuses){
           exit_statuses[killed_children] = pp->xstate; //store exit status of child proces
           printf("[waitall] Collecting child PID=%d with exit status=%d\n", pp->pid, pp->xstate);
           freeproc(pp);
-          printf("[waitall] Collected\n");
+          // printf("[waitall] Collected\n");
           killed_children++;
           release(&pp->lock);
           // release(&wait_lock);
@@ -455,7 +455,7 @@ waitall(int* n, int* statuses){
     }
     // if there were children and at the last round we kill all shildren.
     if(active_children == killed_children && active_children > 0){
-      printf("[waitall] No children to wait for\n");
+      printf("[waitall] No more children to wait for\n");
       if(copyout(p->pagetable,(uint64) n, (char *)&killed_children, sizeof(int))< 0) { // copy n to user space
         goto error;
       }
