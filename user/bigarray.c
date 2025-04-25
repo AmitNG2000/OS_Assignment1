@@ -8,7 +8,7 @@
 
 // Allocated in global data section which is bigger. 
 int array[ARRAY_SIZE];
-int pids_arr[NUM_OF_CHILDREN_AND_PARTS];
+int pids_arr[NPROC];
 
 int main() {
     
@@ -16,8 +16,13 @@ int main() {
   for (int i = 0; i < ARRAY_SIZE; i++) {
     array[i] = i;
   }
-
+  // Create child processes.
   int forkn_order = forkn(NUM_OF_CHILDREN_AND_PARTS, pids_arr);
+  // printf("[bigarray parent] Created children with PIDs: ");
+  // for (int i = 0; i < NUM_OF_CHILDREN_AND_PARTS; i++) {
+  //   printf("%d ", pids_arr[i]);
+  // }
+  // printf("\n"); ////// This led to a mix in print since in xv6 printf() is not buffered.
   //error
   if (forkn_order < 0) {
       printf("Forkn failed\n");
@@ -42,7 +47,7 @@ int main() {
       }
       printf("[bigarray parent] Total sum of the array: %d\n", total_sum);
       sleep(1); // allow time for stdout to flush
-      exit(total_sum, "Parent done");
+      exit(total_sum, "[bigarray exit msg] Parent done");
   }
   // Child processes
   if (forkn_order > 0) {
@@ -57,7 +62,7 @@ int main() {
       }
 
       // Exit with the calculated sum
-      printf("[bigarray child] Childe forkn order=%d with calculated partly sum=%d\n", forkn_order, sum);
+      // printf("[bigarray child] Childe forkn order=%d with calculated partly sum=%d\n", forkn_order, sum);
       exit(sum, "Child process exited");
   }
   //never get to this part

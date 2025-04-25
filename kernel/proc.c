@@ -333,9 +333,10 @@ forkn(int n, int* pids)
   }
 
   int i;
-  struct proc *p_arr[n];
+  struct proc *p_arr[NPROC];
   struct proc *np;
   struct proc *p = myproc();
+  int pids_arr[NPROC]; //array for process ids
 
   for (int j=0; j<n; j++) {
 
@@ -349,7 +350,7 @@ forkn(int n, int* pids)
       }
       return -1;
     }
-    p_arr[j] = np; //store process pointer in array
+    
 
 
     // Copy user memory from parent to child.
@@ -366,7 +367,7 @@ forkn(int n, int* pids)
     *(np->trapframe) = *(p->trapframe);
 
     // Cause fork to return counter of current child process.
-    np->trapframe->a0 = j;
+    np->trapframe->a0 = j + 1;
 
     // increment reference counts on open file descriptors.
     for(i = 0; i < NOFILE; i++)
@@ -383,7 +384,9 @@ forkn(int n, int* pids)
     acquire(&wait_lock);
     np->parent = p;
     release(&wait_lock);
-    printf("Forked child PID=%d\n", np->pid);
+    p_arr[j] = np; //store process pointer in array
+    pids_arr[j] = np->pid; //store process id in array
+    printf("[forkn] Forked child PID=%d\n", np->pid);
   } 
 
   for (int j=0; j<n; j++) 
@@ -392,21 +395,18 @@ forkn(int n, int* pids)
     p_arr[j]->state = RUNNABLE;
     release(&p_arr[j]->lock);
   }
-  printf("All procces' status changed to RUNNABLE.\n");
+  printf("[frokn] All procces' status changed to RUNNABLE.\n");
 
   
   //copy process' ids to the user space array
-  for (int j=0; j<n; j++) {
-    if (copyout(p->pagetable, (uint64)&pids[j], (char *)&p_arr[j]->pid, sizeof(p_arr[j]->pid)<0)) {
-      
+  if (copyout(p->pagetable, (uint64)pids, (char *)pids_arr, NPROC * sizeof(int)) < 0) {
+    
       for (int k=0; k<n; k++) {
         freeproc(p_arr[k]);
         release(&p_arr[k]->lock);
       }
       return -1;
     }
-    
-  }
   return 0; //return 0 to parent process.
 }
 int
@@ -416,6 +416,7 @@ waitall(int* n, int* statuses){
   int killed_children; //counter
   int active_children; //counter
   int exit_statuses[NPROC]; //array for exit statuses of killed children
+  int have_children = 0;
 
   acquire(&wait_lock);
 
@@ -425,6 +426,7 @@ waitall(int* n, int* statuses){
     // Scan through table looking for exited children.
     for(pp = proc; pp < &proc[NPROC]; pp++){
       if(pp->parent == p){
+        have_children = 1;
         acquire(&pp->lock);
         active_children++; //count the number of children
         if(pp->state == ZOMBIE){
@@ -445,7 +447,7 @@ waitall(int* n, int* statuses){
 
 
     // If there were no children at all
-    if(active_children == 0 && killed_children == 0){
+    if(active_children == 0 && killed_children == 0 && have_children == 0){
       release(&wait_lock);
       printf("[waitall] No children to wait from the beginning\n");
       if(copyout(p->pagetable,(uint64) n, (char *)&killed_children, sizeof(int))< 0) { //if not have any children, set n to 0 and copy to user space   

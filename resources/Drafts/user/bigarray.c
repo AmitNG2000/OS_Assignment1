@@ -27,7 +27,7 @@ int main() {
     for (int i = start; i < end; i++)
       sum += arr[i];
 
-    printf("Child %d (pid=%d) computed sum = %d\n", which, getpid(), sum);
+    // printf("Child %d (pid=%d) computed sum = %d\n", which, getpid(), sum);
     exit(sum, "");
   }
 
