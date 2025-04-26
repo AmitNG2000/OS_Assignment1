@@ -4,7 +4,7 @@
 #include "kernel/param.h"
 
 #define ARRAY_SIZE (1 << 16) // 2^16
-#define NUM_OF_CHILDREN_AND_PARTS 4
+#define NUM_OF_CHILDREN_AND_PARTS 4 //must be a divisor of ARRAY_SIZE
 
 // Allocated in global data section which is bigger. 
 int array[ARRAY_SIZE];
@@ -36,14 +36,18 @@ int main() {
         printf("waitall failed\n");
         exit(1, "waitall error");
     }
-      // sum the exit statuses of the child processes
-      int total_sum = 0;
-      for (int i = 0; i < NUM_OF_CHILDREN_AND_PARTS; i++) {
-        total_sum+= exit_statuses[i];
-      }
-      printf("[bigarray parent] Total sum of the array: %d\n", total_sum);
-      sleep(1); // allow time for stdout to flush
-      exit(total_sum, "[bigarray exit msg] Parent done");
+    if (kiiled_children!= NUM_OF_CHILDREN_AND_PARTS) {
+        printf("kiiled_children!= NUM_OF_CHILDREN_AND_PARTS\n");
+        exit(1, "waitall error");
+    }
+    // sum the exit statuses of the child processes
+    int total_sum = 0;
+    for (int i = 0; i < NUM_OF_CHILDREN_AND_PARTS; i++) {
+      total_sum+= exit_statuses[i];
+    }
+    printf("[bigarray parent] Total sum of the array: %d\n", total_sum);
+    sleep(1); // allow time for stdout to flush
+    exit(total_sum, "[bigarray exit msg] Parent done");
   }
   // Child processes
   if (forkn_order > 0) {

@@ -4,6 +4,6 @@
 
 
 int main() {
-    exit(0,"goodbye xv6\n");
+    exit(0,"Goodbye World xv6\n");
     return 0;
 }
